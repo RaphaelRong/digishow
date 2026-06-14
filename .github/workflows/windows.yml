@@ -23,7 +23,10 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2022_64'
           modules: 'qtwebengine qtwebchannel qtwebsockets qtmultimedia qtserialport qtpositioning qtsvg'
-          cache: true
+          aqtversion: '==3.2.1'
+          py7zrversion: '==0.22.0'
+          add-tools-to-path: true
+          cache: false
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
