@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtWebEngine 1.8
+import QtQuick
+import QtWebEngine
 
 WebEngineView {
 

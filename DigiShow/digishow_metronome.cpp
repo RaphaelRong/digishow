@@ -1,5 +1,7 @@
 #include "digishow_metronome.h"
 #include "ableton/Link.hpp"
+#include <QMediaDevices>
+#include <QAudioDevice>
 #include <qmath.h>
 #include <qendian.h>
 
@@ -26,18 +28,15 @@ DigishowMetronome::DigishowMetronome(QObject *parent) : QObject(parent)
     QAudioFormat format;
     format.setSampleRate(44100);
     format.setChannelCount(1);
-    format.setSampleSize(16);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::SignedInt);
+    format.setSampleFormat(QAudioFormat::Int16);
 
-    auto deviceInfo = QAudioDeviceInfo::defaultOutputDevice();
-    if (!deviceInfo.isFormatSupported(format)) format = deviceInfo.nearestFormat(format);
+    auto deviceInfo = QMediaDevices::defaultAudioOutput();
+    if (!deviceInfo.isFormatSupported(format)) format = deviceInfo.preferredFormat();
 
     const int durationSeconds = 1;
     const int toneSampleRateHz = 880;
     m_soundGenerator.reset(new ToneGenerator(format, durationSeconds * 1000000, toneSampleRateHz));
-    m_soundOutput.reset(new QAudioOutput(deviceInfo, format));
+    m_soundOutput.reset(new QAudioSink(deviceInfo, format));
 
     connect(this, SIGNAL(beatChanged()), this, SLOT(onBeatChanged()));
     connect(this, SIGNAL(quarterChanged()), this, SLOT(onQuarterChanged()));
@@ -281,9 +280,9 @@ void ToneGenerator::stop()
 
 void ToneGenerator::generateData(const QAudioFormat &format, qint64 durationUs, int sampleRate)
 {
-    const int channelBytes = format.sampleSize() / 8;
+    const int channelBytes = format.bytesPerSample();
     const int sampleBytes = format.channelCount() * channelBytes;
-    qint64 length = (format.sampleRate() * format.channelCount() * (format.sampleSize() / 8))
+    qint64 length = (format.sampleRate() * format.channelCount() * format.bytesPerSample())
                         * durationUs / 1000000;
     Q_ASSERT(length % sampleBytes == 0);
     Q_UNUSED(sampleBytes) // suppress warning in release builds
@@ -297,28 +296,18 @@ void ToneGenerator::generateData(const QAudioFormat &format, qint64 durationUs, 
         const qreal x = qSin(2 * M_PI * sampleRate * qreal(sampleIndex++ % format.sampleRate()) / format.sampleRate());
 
         for (int i=0; i<format.channelCount(); ++i) {
-            if (format.sampleSize() == 8) {
-                if (format.sampleType() == QAudioFormat::UnSignedInt) {
-                    const quint8 value = static_cast<quint8>((1.0 + x) / 2 * 255);
-                    *reinterpret_cast<quint8 *>(ptr) = value;
-                } else if (format.sampleType() == QAudioFormat::SignedInt) {
-                    const qint8 value = static_cast<qint8>(x * 127);
-                    *reinterpret_cast<qint8 *>(ptr) = value;
-                }
-            } else if (format.sampleSize() == 16) {
-                if (format.sampleType() == QAudioFormat::UnSignedInt) {
-                    quint16 value = static_cast<quint16>((1.0 + x) / 2 * 65535);
-                    if (format.byteOrder() == QAudioFormat::LittleEndian)
-                        qToLittleEndian<quint16>(value, ptr);
-                    else
-                        qToBigEndian<quint16>(value, ptr);
-                } else if (format.sampleType() == QAudioFormat::SignedInt) {
-                    qint16 value = static_cast<qint16>(x * 32767);
-                    if (format.byteOrder() == QAudioFormat::LittleEndian)
-                        qToLittleEndian<qint16>(value, ptr);
-                    else
-                        qToBigEndian<qint16>(value, ptr);
-                }
+            if (format.sampleFormat() == QAudioFormat::UInt8) {
+                const quint8 value = static_cast<quint8>((1.0 + x) / 2 * 255);
+                *reinterpret_cast<quint8 *>(ptr) = value;
+            } else if (format.sampleFormat() == QAudioFormat::Int16) {
+                qint16 value = static_cast<qint16>(x * 32767);
+                qToLittleEndian<qint16>(value, ptr);
+            } else if (format.sampleFormat() == QAudioFormat::Int32) {
+                qint32 value = static_cast<qint32>(x * 2147483647);
+                qToLittleEndian<qint32>(value, ptr);
+            } else if (format.sampleFormat() == QAudioFormat::Float) {
+                float value = static_cast<float>(x);
+                *reinterpret_cast<float *>(ptr) = value;
             }
 
             ptr += channelBytes;

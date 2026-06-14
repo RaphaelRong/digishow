@@ -166,7 +166,7 @@ void HttpSocket::processHttpRequest()
 
         // transfer a file
         QStringList fileDirPaths = ((HttpServer*)parent())->fileDirPaths();
-        foreach (const QString &strDirPath, fileDirPaths) {
+        for (const QString& strDirPath : fileDirPaths) {
             QString strFilePath = strDirPath + strContentPath;
             if (!strContentPath.contains("../") && !strContentPath.contains("/..") &&
                 QFile::exists(strFilePath)) {

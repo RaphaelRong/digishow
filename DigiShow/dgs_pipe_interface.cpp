@@ -110,7 +110,7 @@ bool DgsPipeInterface::startWebsocketServer()
 
 void DgsPipeInterface::stopWebsocketServer()
 {
-    foreach (QWebSocket *websocket, m_websocketServerConnections) {
+    for (QWebSocket* websocket : m_websocketServerConnections) {
         websocket->close();
         delete websocket;
     }
@@ -173,7 +173,7 @@ void DgsPipeInterface::stopWebsocketClient()
 void DgsPipeInterface::sendWebsocketMessage(const QString &message)
 {
     // for server mode
-    foreach (QWebSocket *websocket, m_websocketServerConnections) {
+    for (QWebSocket* websocket : m_websocketServerConnections) {
         websocket->sendTextMessage(message);
         websocket->flush();
     }
@@ -267,7 +267,7 @@ void DgsPipeInterface::onWebsocketServerNewConnection()
 {
     // disconnect old websocket session
     if (!m_websocketServerMultiple) {
-        foreach (QWebSocket *websocket, m_websocketServerConnections) {
+        for (QWebSocket* websocket : m_websocketServerConnections) {
             websocket->close();
             delete websocket;
         }

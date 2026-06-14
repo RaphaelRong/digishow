@@ -1,5 +1,5 @@
-import QtQuick 2.12
-import QtMultimedia 5.12
+import QtQuick
+import QtMultimedia
 
 Item {
 
@@ -40,10 +40,10 @@ Item {
     MediaPlayer {
         id: videoPlayer
         autoPlay: false
-        autoLoad: true
         loops: (videoView.repeat ? MediaPlayer.Infinite : 1)
-        volume: videoView.volume
         playbackRate: videoView.speed
+        audioOutput: AudioOutput { volume: videoView.volume }
+        videoOutput: videoOutput
 
         //onPositionChanged: {}
     }
@@ -75,7 +75,6 @@ Item {
 
     VideoOutput {
         id: videoOutput
-        source: videoPlayer
         anchors.fill: parent
     }
 

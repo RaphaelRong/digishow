@@ -32,9 +32,11 @@ DigishowPixelPlayer::DigishowPixelPlayer(QObject *parent) : QObject(parent)
 
     // init video playback
     m_videoPlayer = new QMediaPlayer();
-    m_videoSurface = new DppVideoSurface();
-    connect(m_videoSurface, SIGNAL(frameReady(const QVideoFrame &)), this, SLOT(onVideoFrameReady(const QVideoFrame &)));
-    m_videoPlayer->setVideoOutput(m_videoSurface);
+    m_videoAudioOutput = new QAudioOutput(this);
+    m_videoPlayer->setAudioOutput(m_videoAudioOutput);
+    m_videoSink = new QVideoSink(this);
+    connect(m_videoSink, &QVideoSink::videoFrameChanged, this, &DigishowPixelPlayer::onVideoFrameReady);
+    m_videoPlayer->setVideoSink(m_videoSink);
 
     // init image sequence playback
     m_imageSequenceFPS = 10;
@@ -64,9 +66,10 @@ DigishowPixelPlayer::~DigishowPixelPlayer()
     if (m_isPlaying) stop();
 
     delete m_videoPlayer;
-    delete m_videoSurface;
+    delete m_videoAudioOutput;
+    delete m_videoSink;
 
-    foreach (QImage *image, m_imageSequence) delete image;
+    for (QImage *image : m_imageSequence) delete image;
     m_imageSequence.clear();
 
     delete m_timerPlayer;
@@ -102,9 +105,7 @@ bool DigishowPixelPlayer::load(const QString &mediaUrl, int mediaType)
         QUrl url(mediaUrl);
         if (!url.isValid()) return false;
 
-        QMediaContent content(url);
-        if (content.isNull()) return false;
-        m_videoPlayer->setMedia(content);
+        m_videoPlayer->setSource(url);
 
     } else if (m_mediaType == MediaImageSequence) {
 
@@ -114,7 +115,6 @@ bool DigishowPixelPlayer::load(const QString &mediaUrl, int mediaType)
 
         // read settings
         QSettings settings(iniFilePath, QSettings::IniFormat);
-        settings.setIniCodec("UTF-8");
         QString sequFile = settings.value("file").toString();
         int sequFirst = settings.value("first", 0).toInt();
         int sequLast  = settings.value("last", 1).toInt();
@@ -129,7 +129,7 @@ bool DigishowPixelPlayer::load(const QString &mediaUrl, int mediaType)
         QString dirPath = fi.absolutePath();
 
         for (int n=sequFirst ; n<=sequLast ; n+=sequStep) {
-            QString imageFileName = QString().sprintf(sequFile.toUtf8().constData(), n);
+            QString imageFileName = QString::asprintf(sequFile.toUtf8().constData(), n);
             QString imageFilePath = QDir(dirPath).absoluteFilePath(imageFileName);
             QImage image;
             if (!image.load(imageFilePath)) continue;
@@ -151,7 +151,7 @@ void DigishowPixelPlayer::setVolume(double volume)
 {
     m_volume = volume;
 
-    if (m_mediaType == MediaVideo) m_videoPlayer->setVolume(volume*100);
+    if (m_mediaType == MediaVideo) m_videoAudioOutput->setVolume(volume);
 }
 
 void DigishowPixelPlayer::setSpeed(double speed)
@@ -260,7 +260,7 @@ int DigishowPixelPlayer::addPixelMapping(dppPixelMapping mapping)
 int DigishowPixelPlayer::transferFrameAllMappedPixels()
 {
     int count = 0;
-    foreach (const dppPixelMapping mapping, m_pixelMappingList) {
+    for (const dppPixelMapping &mapping : m_pixelMappingList) {
         count += transferFramePixels(mapping);
     }
     return count;
@@ -415,11 +415,13 @@ int DigishowPixelPlayer::transferFramePixels(dppPixelMapping mapping)
 
 void DigishowPixelPlayer::onVideoFrameReady(const QVideoFrame &frame)
 {
-    QVideoFrame f(frame);
-    f.map(QAbstractVideoBuffer::ReadOnly);
-    if (f.width() * f.height() * 4 == f.mappedBytes())
-        updateFrameBuffer(f.bits(), f.width(), f.height());
-    f.unmap();
+    QImage image = frame.toImage();
+    if (!image.isNull()) {
+        if (image.format() != QImage::Format_ARGB32)
+            image = image.convertToFormat(QImage::Format_ARGB32);
+        if (image.width() * image.height() * 4 == image.sizeInBytes())
+            updateFrameBuffer(image.bits(), image.width(), image.height());
+    }
 }
 
 void DigishowPixelPlayer::onTimerPlayerFired()

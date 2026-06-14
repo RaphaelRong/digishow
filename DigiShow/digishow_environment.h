@@ -20,6 +20,9 @@
 
 #include <QObject>
 #include "digishow.h"
+#include "digishow_cue_manager.h"
+#include "digishow_metronome.h"
+#include "digishow_remote_web.h"
 
 Q_DECLARE_METATYPE(dgsSignalData)
 Q_DECLARE_METATYPE(dgsInterfaceInfo)

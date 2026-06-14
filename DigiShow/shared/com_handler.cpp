@@ -556,10 +556,14 @@ void ComHandler::tryReconnect()
     if (now - _timeLastTryReconnect < 1.0) return;
     _timeLastTryReconnect = now;
 
-    foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
-        if (serialPortInfo.portName() == _serialPort && !serialPortInfo.isBusy()) {
-            if (open(_serialPort.toUtf8(), _serialBaud, _serialSetting)) {
-                _timerTryReconnect->stop();
+    for (const QSerialPortInfo& serialPortInfo : QSerialPortInfo::availablePorts()) {
+        if (serialPortInfo.portName() == _serialPort) {
+            QSerialPort tester(serialPortInfo);
+            if (tester.open(QIODevice::ReadWrite)) {
+                tester.close();
+                if (open(_serialPort.toUtf8(), _serialBaud, _serialSetting)) {
+                    _timerTryReconnect->stop();
+                }
             }
             break;
         }
@@ -574,7 +578,7 @@ double ComHandler::getCurrentSecond()
 QString ComHandler::findPort(uint32_t vid, uint32_t pid, const char* description, const char* manufacturer)
 {
     bool found = false;
-    foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
+    for (const QSerialPortInfo& serialPortInfo : QSerialPortInfo::availablePorts()) {
 
         if (vid!=0 && pid!=0 &&
             serialPortInfo.hasVendorIdentifier() && serialPortInfo.hasProductIdentifier() &&

@@ -1,5 +1,5 @@
-import QtQml 2.12
-import DigiShow 1.0
+import QtQml
+import DigiShow
 
 AppUtilities {
 

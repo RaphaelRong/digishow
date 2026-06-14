@@ -5,7 +5,7 @@
 #include <QVariantMap>
 #include <QThread>
 #include <QMutex>
-#include <QAudioOutput>
+#include <QAudioSink>
 #include <QScopedPointer>
 #include <QTimer>
 #include <QElapsedTimer>
@@ -101,7 +101,7 @@ private:
 
     // sound player
     QScopedPointer<ToneGenerator> m_soundGenerator;
-    QScopedPointer<QAudioOutput> m_soundOutput;
+    QScopedPointer<QAudioSink> m_soundOutput;
 
     void startSoundOutput();
     void stopSoundOutput();

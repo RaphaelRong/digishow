@@ -1,9 +1,9 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Controls.Material 2.12
-import QtQuick.Layouts 1.12
-import QtWebEngine 1.8
-import DigiShow 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Layouts
+import QtWebEngine
+import DigiShow
 
 import "components"
 
@@ -197,7 +197,7 @@ Dialog {
 
             MenuItem {
                 text: qsTr("Reset")
-                onTriggered: reset()
+                onTriggered: resetCuePlayer()
             }
             MwMenuSeparator {}
             MenuItem {
@@ -426,7 +426,7 @@ Dialog {
                 anchors.verticalCenter: parent.verticalCenter
                 horizontalAlignment: Text.AlignRight
                 color: "#999999"
-                font.family: "Monaco, Consolas, Monospace, Courier New"
+                font.family: "Monaco"
                 font.bold: false
                 font.pixelSize: 12
                 text: timelineView.playheadTime.toFixed(1)
@@ -735,7 +735,7 @@ Dialog {
         timelineView.isModified = false
     }
 
-    function reset() {
+    function resetCuePlayer() {
         timelineView.reset()
     }
 

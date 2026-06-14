@@ -144,7 +144,7 @@ void DgsMetronomeInterface::processBeatAction(int beatIndex)
 {
     if (m_beatActionMap.contains(beatIndex)) {
         BeatActionList beatActionList = m_beatActionMap[beatIndex];
-        foreach (const BeatAction & beatAction, beatActionList) {
+        for (const BeatAction & beatAction : beatActionList) {
 
             dgsSignalData data;
             data.signal = DATA_SIGNAL_NOTE;

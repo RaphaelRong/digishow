@@ -18,6 +18,8 @@
 #include "dgs_audioin_interface.h"
 #include "audio_analyzer.h"
 #include "digishow_environment.h"
+#include <QMediaDevices>
+#include <QAudioDevice>
 
 DgsAudioinInterface::DgsAudioinInterface(QObject *parent) : DigishowInterface(parent)
 {
@@ -41,12 +43,12 @@ int DgsAudioinInterface::openInterface()
 
     // confirm the specified audio input device
     QString audioinName = m_interfaceOptions.value("port").toString();
-    QAudioDeviceInfo device;
+    QAudioDevice device;
     if (audioinName.isEmpty()) {
-        device = QAudioDeviceInfo::defaultInputDevice();
+        device = QMediaDevices::defaultAudioInput();
     } else {
         int audioinIndex = -1;
-        QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+        QList<QAudioDevice> devices = QMediaDevices::audioInputs();
         for (int n=0 ; n < devices.length() ; n++)
             if (getUniqueAudioinName(n) == audioinName) { audioinIndex = n; break; }
         if (audioinIndex == -1) return ERR_DEVICE_NOT_READY;
@@ -162,7 +164,7 @@ QVariantList DgsAudioinInterface::listOnline()
     QVariantList list;
     QVariantMap info;
 
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+    QList<QAudioDevice> devices = QMediaDevices::audioInputs();
     for (int n=0 ; n < devices.length() ; n++) {
         info.clear();
         info["port"] = getUniqueAudioinName(n);
@@ -170,8 +172,8 @@ QVariantList DgsAudioinInterface::listOnline()
         QAudioFormat format = devices[n].preferredFormat();
         info["channelCount"] = format.channelCount();
         info["sampleRate"] = format.sampleRate();
-        info["sampleSize"] = format.sampleSize();
-        info["sampleType"] = format.sampleType();
+        info["sampleSize"] = format.bytesPerSample() * 8;
+        info["sampleType"] = static_cast<int>(format.sampleFormat());
         list.append(info);
     }
 
@@ -181,15 +183,15 @@ QVariantList DgsAudioinInterface::listOnline()
 QString DgsAudioinInterface::getUniqueAudioinName(int index)
 {
     QString audioinName;
-    QList<QAudioDeviceInfo> devices = QAudioDeviceInfo::availableDevices(QAudio::AudioInput);
+    QList<QAudioDevice> devices = QMediaDevices::audioInputs();
     int i = 0;
 
     if (index >= 0 && index < devices.length()) {
 
-        audioinName = devices[index].deviceName();
+        audioinName = devices[index].description();
 
         for (int n=0 ; n<index ; n++)
-            if (devices[n].deviceName() == audioinName) i++;
+            if (devices[n].description() == audioinName) i++;
     }
 
     if (i>0) return audioinName + " #" + QString::number(i+1);

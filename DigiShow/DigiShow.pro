@@ -1,9 +1,9 @@
-QT += quick serialport webengine websockets multimedia
+QT += quick serialport webenginequick websockets multimedia
 
-CONFIG += c++11 sdk_no_version_check
+CONFIG += c++17 sdk_no_version_check
 
-DEFINES -= QT_DEPRECATED_WARNINGS
-DEFINES += QT_NO_DEPRECATED_WARNINGS
+#DEFINES -= QT_DEPRECATED_WARNINGS
+#DEFINES += QT_NO_DEPRECATED_WARNINGS
 
 SOURCES += \
     $$PWD/shared/aes.c \

@@ -1,4 +1,4 @@
-CONFIG += c++11
+CONFIG += c++17
 
 SOURCES += \
     $$PWD/libftdi/src/ftdi.c \
@@ -18,9 +18,18 @@ macx {
     LIBS += -framework IOKit -framework CoreFoundation
 
     contains(QT_ARCH, arm64) {
-        LIBS += -L$$PWD/libusb/mac-arm64 -lusb-1.0
+        # use system libusb from Homebrew if bundled lib is missing
+        exists($$PWD/libusb/mac-arm64/libusb-1.0.a) | exists($$PWD/libusb/mac-arm64/libusb-1.0.dylib) {
+            LIBS += -L$$PWD/libusb/mac-arm64 -lusb-1.0
+        } else {
+            LIBS += -L/opt/homebrew/lib -lusb-1.0
+        }
     } else {
-        LIBS += -L$$PWD/libusb/mac-x64 -lusb-1.0
+        exists($$PWD/libusb/mac-x64/libusb-1.0.a) | exists($$PWD/libusb/mac-x64/libusb-1.0.dylib) {
+            LIBS += -L$$PWD/libusb/mac-x64 -lusb-1.0
+        } else {
+            LIBS += -L/opt/homebrew/lib -lusb-1.0
+        }
     }
 }
 

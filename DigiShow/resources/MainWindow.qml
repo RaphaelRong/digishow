@@ -1,9 +1,9 @@
-import QtQuick 2.12
-import QtQuick.Window 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Controls.Material 2.12
-import QtQuick.Dialogs 1.0
-import DigiShow 1.0
+import QtQuick
+import QtQuick.Window
+import QtQuick.Controls
+import QtQuick.Controls.Material
+import QtQuick.Dialogs
+import DigiShow
 
 import "components"
 
@@ -862,7 +862,6 @@ ApplicationWindow {
 
         id: dialogLoadFile
         title: qsTr("Open File")
-        folder: shortcuts.home
         selectExisting: true
         nameFilters: digishow.appExperimental()
                      ? [ qsTr("DigiShow files") + " (*.dgs)", qsTr("DigiShow encrypted files") + " (*.dgsx)", qsTr("JSON files")  + " (*.json)", qsTr("All files") + " (*)" ]
@@ -890,7 +889,6 @@ ApplicationWindow {
 
         id: dialogSaveFile
         title: qsTr("Save File")
-        folder: shortcuts.home
         selectExisting: false
         nameFilters: digishow.appExperimental() && app.filepath!==""
                      ? [ qsTr("DigiShow files") + " (*.dgs)", qsTr("DigiShow encrypted files") + " (*.dgsx)", qsTr("All files") + " (*)" ]

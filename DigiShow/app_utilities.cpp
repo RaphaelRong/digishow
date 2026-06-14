@@ -47,14 +47,14 @@ AppUtilities::AppUtilities(QObject *parent) : QObject(parent)
 AppUtilities::~AppUtilities()
 {
     // used for comOpen, comSend functions
-    foreach (QSerialPort *serial, m_comConnections) {
+    for (QSerialPort* serial : m_comConnections) {
         if (serial != nullptr) {
             serial->close();
             delete serial;
         }
     }
     // used for tcpOpen, tcpSend functions
-    foreach (QTcpSocket *socket, m_tcpConnections) {
+    for (QTcpSocket* socket : m_tcpConnections) {
         if (socket != nullptr) {
             socket->close();
             delete socket;
@@ -163,7 +163,6 @@ QString AppUtilities::loadStringFromFile(const QString & filepath)
     QFile file(filepath);
     if (file.open(QIODevice::ReadOnly)) {
         QTextStream stream(&file);
-        stream.setCodec("UTF-8");
         data = stream.readAll();
         file.close();
     }
@@ -176,7 +175,6 @@ bool AppUtilities::saveStringToFile(const QString & data, const QString & filepa
     QFile file(filepath);
     if (file.open(QIODevice::WriteOnly)) {
         QTextStream stream(&file);
-        stream.setCodec("UTF-8");
         stream << data;
         file.close();
         return true;
@@ -308,7 +306,7 @@ QString AppUtilities::hostIpAddress()
     QHostInfo hostInfo = QHostInfo::fromName(hostName);
     QList<QHostAddress> addresses = hostInfo.addresses();
 
-    foreach (const QHostAddress &address, addresses) {
+    for (const QHostAddress& address : addresses) {
         if (address.protocol() == QAbstractSocket::IPv4Protocol && !address.isLoopback()) {
             return address.toString();
         }

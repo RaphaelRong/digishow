@@ -17,7 +17,7 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QtWebEngine/qtwebengineglobal.h>
+#include <QtWebEngineQuick/qtwebenginequickglobal.h>
 #include <QFileOpenEvent>
 #include <QFontDatabase>
 #include <QFont>
@@ -107,10 +107,9 @@ private:
 
 QString fontAvailable(const QStringList &fontNames)
 {
-    QFontDatabase fonts;
     for (int n=0 ; n<fontNames.length() ; n++) {
         QString fontName = fontNames[n];
-        if (fonts.families().contains(fontName)) return fontName;
+        if (QFontDatabase::families().contains(fontName)) return fontName;
     }
     return QString();
 }
@@ -161,13 +160,17 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 
     bool hidpi = appOptions.value("hidpi", true).toBool();
-    if (hidpi) QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    if (hidpi) {
+#if (QT_VERSION < QT_VERSION_CHECK(6,0,0))
+        QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+#endif
+    }
 
     float scale = appOptions.value("scale", 0).toFloat();
     if (scale > 0) qputenv("QT_SCALE_FACTOR", QString::number(scale).toUtf8());
 
 #if (QT_VERSION >= QT_VERSION_CHECK(5,15,0))
-    QtWebEngine::initialize();
+    QtWebEngineQuick::initialize();
 #endif
 
     // create app

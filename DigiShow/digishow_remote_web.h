@@ -18,6 +18,8 @@
 #ifndef DIGISHOWREMOTEWEB_H
 #define DIGISHOWREMOTEWEB_H
 
+#include <QVariant>
+#include <QMap>
 #include "http_server.h"
 
 class DigishowRemoteWeb : public HttpServiceHandler

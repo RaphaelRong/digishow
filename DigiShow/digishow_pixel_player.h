@@ -20,10 +20,12 @@
 
 #include <QObject>
 #include <QMediaPlayer>
+#include <QAudioOutput>
+#include <QVideoSink>
+#include <QVideoFrame>
 #include <QImage>
 #include <QTimer>
 #include <QElapsedTimer>
-#include <QAbstractVideoSurface>
 
 typedef struct dppPixelMapping {
 
@@ -62,8 +64,6 @@ typedef struct dppPixelMapping {
 
 } dppPixelMapping;
 
-
-class DppVideoSurface;
 
 class DigishowPixelPlayer : public QObject
 {
@@ -154,7 +154,8 @@ private:
 
     // video playback
     QMediaPlayer *m_videoPlayer;
-    DppVideoSurface *m_videoSurface;
+    QAudioOutput *m_videoAudioOutput;
+    QVideoSink *m_videoSink;
 
     // image sequence playback
     QList<QImage*> m_imageSequence;
@@ -179,33 +180,6 @@ private:
 
     void updateFrameBuffer(uint8_t *pFramePixels, int width, int height);
     int transferFramePixels(dppPixelMapping mapping);
-};
-
-class DppVideoSurface : public QAbstractVideoSurface
-{
-    Q_OBJECT
-
-    QList<QVideoFrame::PixelFormat> supportedPixelFormats(QAbstractVideoBuffer::HandleType handleType = QAbstractVideoBuffer::NoHandle) const
-    {
-        Q_UNUSED(handleType);
-        return QList<QVideoFrame::PixelFormat>() << QVideoFrame::Format_ARGB32;
-    }
-
-    bool present(const QVideoFrame &frame)
-    {
-        if (!frame.isValid()) return false;
-        emit frameReady(frame);
-        return true;
-    }
-
-    QByteArray &framePixels(){ return m_frameLatest; }
-
-signals:
-    void frameReady(const QVideoFrame &frame);
-
-private:
-
-    QByteArray m_frameLatest;
 };
 
 

@@ -76,7 +76,7 @@ bool TcpHandler::open(const char* host, int port, bool ignoreError)
             connect(_tcpSocket, SIGNAL(readyRead()), this, SLOT(readData()));
         }
 
-        connect(_tcpSocket, SIGNAL(error(QAbstractSocket::SocketError)),
+        connect(_tcpSocket, SIGNAL(errorOccurred(QAbstractSocket::SocketError)),
                 this, SLOT(processError(QAbstractSocket::SocketError)));
 
         return true;

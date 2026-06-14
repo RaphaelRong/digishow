@@ -22,6 +22,7 @@
 
 #include "audio_analyzer.h"
 #include <QAudioFormat>
+#include <QMediaDevices>
 #include <QDebug>
 #include <cmath>
 #include <QTimer>
@@ -31,7 +32,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-AudioAnalyzer::AudioAnalyzer(const QAudioDeviceInfo &device, QObject *parent)
+AudioAnalyzer::AudioAnalyzer(const QAudioDevice &device, QObject *parent)
     : QObject(parent)
     , m_enableUpdateLevel(true)
     , m_enableUpdatePeak(true)
@@ -49,19 +50,15 @@ AudioAnalyzer::AudioAnalyzer(const QAudioDeviceInfo &device, QObject *parent)
     QAudioFormat format;
     format.setSampleRate(SAMPLE_RATE);
     format.setChannelCount(1);
-    format.setSampleSize(16);
-    format.setCodec("audio/pcm");
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::SignedInt);
+    format.setSampleFormat(QAudioFormat::Int16);
 
     // Check if the desired format is supported by the device
     if (!device.isNull()) {
         if (!device.isFormatSupported(format)) {
-            qWarning() << "Default format not supported, trying to use nearest";
-            format = device.nearestFormat(format);
+            qWarning() << "Default format not supported, trying to use preferred";
+            format = device.preferredFormat();
         }
-        m_audioInput = new QAudioInput(device, format, this);
-        m_audioInput->setVolume(1.0);
+        m_audioInput = new QAudioSource(device, format, this);
     } else {
         qWarning() << "No audio input device found";
         m_audioInput = nullptr;
@@ -118,14 +115,27 @@ void AudioAnalyzer::handleAudioData()
 
 void AudioAnalyzer::processAudioData(const QByteArray &data)
 {
-    int bytesPerSample = 2;
-    const qint16 *samples = reinterpret_cast<const qint16*>(data.constData());
+    if (!m_audioInput) return;
+
+    QAudioFormat format = m_audioInput->format();
+    int bytesPerSample = format.bytesPerSample();
     int sampleCount = data.size() / bytesPerSample;
-    
+
     // Write new data to sliding window
-    for (int i = 0; i < sampleCount; ++i) {
-        m_sampleWindow[m_windowPosition] = samples[i] / 32768.0f; // Normalize 16-bit to [-1, 1]
-        m_windowPosition = (m_windowPosition + 1) % FFT_SIZE;
+    if (format.sampleFormat() == QAudioFormat::Int16) {
+        const qint16 *samples = reinterpret_cast<const qint16*>(data.constData());
+        for (int i = 0; i < sampleCount; ++i) {
+            m_sampleWindow[m_windowPosition] = samples[i] / 32768.0f; // Normalize 16-bit to [-1, 1]
+            m_windowPosition = (m_windowPosition + 1) % FFT_SIZE;
+        }
+    } else if (format.sampleFormat() == QAudioFormat::Float) {
+        const float *samples = reinterpret_cast<const float*>(data.constData());
+        for (int i = 0; i < sampleCount; ++i) {
+            m_sampleWindow[m_windowPosition] = samples[i];
+            m_windowPosition = (m_windowPosition + 1) % FFT_SIZE;
+        }
+    } else {
+        // unsupported sample format
     }
 }
 

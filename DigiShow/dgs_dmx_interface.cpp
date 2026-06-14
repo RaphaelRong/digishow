@@ -523,7 +523,7 @@ void DgsDmxInterface::openDmxClose()
 bool DgsDmxInterface::getUsbVidPid(int *vid, int *pid)
 {
     QString portName = m_com->serialPort()->portName();
-    foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
+    for (const QSerialPortInfo& serialPortInfo : QSerialPortInfo::availablePorts()) {
         if (serialPortInfo.hasVendorIdentifier() && serialPortInfo.hasProductIdentifier() && serialPortInfo.portName() == portName) {
             *vid = serialPortInfo.vendorIdentifier();
             *pid = serialPortInfo.productIdentifier();
@@ -539,7 +539,7 @@ QVariantList DgsDmxInterface::listOnline()
     QVariantList list;
     QVariantMap info;
 
-    foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
+    for (const QSerialPortInfo& serialPortInfo : QSerialPortInfo::availablePorts()) {
 
 #ifdef Q_OS_MAC
         if (serialPortInfo.portName().startsWith("cu.")) continue;

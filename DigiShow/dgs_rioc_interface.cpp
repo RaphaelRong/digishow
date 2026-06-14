@@ -543,7 +543,7 @@ QVariantList DgsRiocInterface::listOnline()
     QVariantList list;
     QVariantMap info;
 
-    foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
+    for (const QSerialPortInfo& serialPortInfo : QSerialPortInfo::availablePorts()) {
 
 #ifdef Q_OS_MAC
         if (serialPortInfo.portName().startsWith("cu.")) continue;

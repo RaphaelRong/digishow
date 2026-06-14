@@ -27,7 +27,8 @@ DgsAPlayer::DgsAPlayer(QObject *parent) : QObject(parent)
     m_timecodeEnabled = false;
 
     m_player = new QMediaPlayer();
-    m_player->setNotifyInterval(100);
+    m_audioOutput = new QAudioOutput(this);
+    m_player->setAudioOutput(m_audioOutput);
     connect(m_player, SIGNAL(positionChanged(qint64)), this, SLOT(onPositionChanged(qint64)));
 
     m_timer = new QTimer();
@@ -39,6 +40,7 @@ DgsAPlayer::~DgsAPlayer()
     if (m_isPlaying) stop();
 
     delete m_timer;
+    delete m_audioOutput;
     delete m_player;
 }
 
@@ -49,10 +51,7 @@ bool DgsAPlayer::load(const QString &strUrl)
     QUrl url(strUrl);
     if (!url.isValid()) return false;
 
-    QMediaContent content(url);
-    if (content.isNull()) return false;
-
-    m_player->setMedia(content);
+    m_player->setSource(url);
     m_isLoaded = true;
 
     return true;
@@ -68,7 +67,7 @@ bool DgsAPlayer::setPort(const QString &port)
 
 void DgsAPlayer::setVolume(double volume)
 {
-    m_player->setVolume(volume*100);
+    m_audioOutput->setVolume(volume);
 }
 
 void DgsAPlayer::setSpeed(double speed)

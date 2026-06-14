@@ -1,8 +1,8 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Dialogs 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
 
-import DigiShow 1.0
+import DigiShow
 
 import "components"
 
@@ -176,7 +176,6 @@ Item {
     MwFileDialog {
         id: dialogSelectFile
         title: qsTr("Select Media File")
-        folder: shortcuts.home
         selectExisting: true
         nameFilters: [ qsTr("Video and picture") + " (*.mp4 *.mov *.png *.jpg *.jpeg *.bmp *.svg)",
                        qsTr("Web page file") +" (*.htm *.html)" ,

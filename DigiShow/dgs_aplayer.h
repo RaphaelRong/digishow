@@ -20,6 +20,7 @@
 
 #include <QObject>
 #include <QMediaPlayer>
+#include <QAudioOutput>
 #include <QTimer>
 
 class DgsAPlayer : public QObject
@@ -55,6 +56,7 @@ private slots:
 
 private:
     QMediaPlayer *m_player;
+    QAudioOutput *m_audioOutput;
     QTimer *m_timer;
     bool m_isLoaded;
     bool m_isPlaying;

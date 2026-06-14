@@ -1,8 +1,8 @@
-import QtQuick 2.12
-import QtQuick.Controls 2.12
-import QtQuick.Dialogs 1.0
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Dialogs
 
-import DigiShow 1.0
+import DigiShow
 
 import "components"
 
@@ -101,7 +101,6 @@ Item {
     MwFileDialog {
         id: dialogSelectFile
         title: qsTr("Select MIDI File")
-        folder: shortcuts.home
         selectExisting: true
         nameFilters: [ qsTr("MIDI files") + " (*.mid)",
                        qsTr("All files") + " (*)" ]

@@ -24,7 +24,8 @@
 #define AUDIO_ANALYZER_H
 
 #include <QObject>
-#include <QAudioInput>
+#include <QAudioSource>
+#include <QAudioDevice>
 #include <QByteArray>
 #include <QVector>
 #include <QTimer>
@@ -36,7 +37,7 @@ class AudioAnalyzer : public QObject
     Q_OBJECT
 
 public:
-    explicit AudioAnalyzer(const QAudioDeviceInfo &device, QObject *parent = nullptr);
+    explicit AudioAnalyzer(const QAudioDevice &device, QObject *parent = nullptr);
     ~AudioAnalyzer();
 
     void start();
@@ -66,7 +67,7 @@ private:
     void processAudioData(const QByteArray &data);
     void performFFT();
     
-    QAudioInput *m_audioInput;
+    QAudioSource *m_audioInput;
     QIODevice *m_audioDevice;
     
     static const int SAMPLE_RATE = 44100;

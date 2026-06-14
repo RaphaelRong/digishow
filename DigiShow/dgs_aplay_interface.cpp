@@ -19,8 +19,6 @@
 #include "dgs_aplayer.h"
 #include "digishow_environment.h"
 
-#include <QAudioOutput>
-
 DgsAPlayInterface::DgsAPlayInterface(QObject *parent) : DigishowInterface(parent)
 {
     m_interfaceOptions["type"] = "aplay";

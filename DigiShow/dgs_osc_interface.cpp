@@ -305,21 +305,21 @@ void DgsOscInterface::processOscMessageIn(tosc_message *osc)
         dgsSignalData data;
         switch (m_endpointInfoList[n].type) {
         case ENDPOINT_OSC_INT:
-            if (!val.isNull() && val.type() == QVariant::Int) {
+            if (!val.isNull() && val.typeId() == QMetaType::Int) {
                 data.signal = DATA_SIGNAL_ANALOG;
                 data.aRange = m_endpointInfoList[n].range;
                 data.aValue = qBound(0, val.toInt(), data.aRange);
             }
             break;
         case ENDPOINT_OSC_FLOAT:
-            if (!val.isNull() && val.type() == QVariant::Double) {
+            if (!val.isNull() && val.typeId() == QMetaType::Double) {
                 data.signal = DATA_SIGNAL_ANALOG;
                 data.aRange = 1000000;
                 data.aValue = int(qBound(0.0, val.toDouble(), 1.0) * data.aRange);
             }
             break;
         case ENDPOINT_OSC_BOOL:
-            if (!val.isNull() && val.type() == QVariant::Bool) {
+            if (!val.isNull() && val.typeId() == QMetaType::Bool) {
                 data.signal = DATA_SIGNAL_BINARY;
                 data.bValue = val.toBool();
             }
@@ -340,10 +340,10 @@ void DgsOscInterface::processOscMessageIn(tosc_message *osc)
 
             const QVariant &val = values.at(n);
             char tag;
-            switch(val.type()) {
-                case QVariant::Int:    tag = 'i'; break;
-                case QVariant::Double: tag = 'f'; break;
-                case QVariant::Bool:   tag = (val.toBool() ? 'T' : 'F'); break;
+            switch(val.typeId()) {
+                case QMetaType::Int:    tag = 'i'; break;
+                case QMetaType::Double: tag = 'f'; break;
+                case QMetaType::Bool:   tag = (val.toBool() ? 'T' : 'F'); break;
                 default: tag = 'N';
             }
             QVariantMap rawDataValue;
@@ -374,14 +374,14 @@ int DgsOscInterface::prepareOscMessageOut(char *buffer, const int len, const cha
     QByteArray formatBytes(s_len, 0);
     for (int n=0 ; n<s_len; n++) {
         QVariant val = values[n];
-        switch (val.type()) {
-        case QVariant::Bool:
+        switch (val.typeId()) {
+        case QMetaType::Bool:
             formatBytes[n] = (val.toBool() ? 'T' : 'F');
             break;
-        case QVariant::Int:
+        case QMetaType::Int:
             formatBytes[n] = 'i';
             break;
-        case QVariant::Double:
+        case QMetaType::Double:
             formatBytes[n] = 'f';
             break;
         default:
@@ -428,7 +428,7 @@ void DgsOscInterface::onTimerFired()
 
     if (m_udp->bytesToWrite() > 0) return;
 
-    foreach (const QString & address, m_dataUpdatedAddresses) {
+    for (const QString & address : m_dataUpdatedAddresses) {
 
         // prepare osc message
         QVariantList frame = m_dataAll.value(address).toList();

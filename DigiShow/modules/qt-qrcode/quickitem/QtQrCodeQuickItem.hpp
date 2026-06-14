@@ -42,7 +42,7 @@ QT_END_NAMESPACE
 class QtQrCodeQuickItem : public QQuickPaintedItem
 {
     Q_OBJECT
-    Q_PROPERTY(QByteArray data READ data WRITE setData NOTIFY dataChanged)
+    Q_PROPERTY(QByteArray data READ data WRITE setData NOTIFY dataChanged FINAL)
     Q_PROPERTY(float margin READ margin WRITE setMargin NOTIFY marginChanged)
     Q_PROPERTY(QColor background READ background WRITE setBackground NOTIFY backgroundChanged)
     Q_PROPERTY(QColor foreground READ foreground WRITE setForeground NOTIFY foregroundChanged)

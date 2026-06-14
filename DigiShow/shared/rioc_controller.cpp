@@ -15,6 +15,7 @@
 
  */
 
+#include <QSerialPort>
 #include <QSerialPortInfo>
 #include <math.h>
 #include "rioc_controller.h"
@@ -55,9 +56,11 @@ bool RiocController::connect(const QString &port)
     #else
 
         // open all ports matched with the specific VID/PID
-        foreach (const QSerialPortInfo &serialPortInfo, QSerialPortInfo::availablePorts()) {
+        for (const QSerialPortInfo& serialPortInfo : QSerialPortInfo::availablePorts()) {
 
-            if (serialPortInfo.isBusy()) continue;
+            QSerialPort tester(serialPortInfo);
+            if (!tester.open(QIODevice::ReadWrite)) continue;
+            tester.close();
 
 #ifdef Q_OS_MAC
             if (serialPortInfo.portName().startsWith("cu.")) continue;

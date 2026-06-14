@@ -178,7 +178,7 @@ void ModbusTcpServer::incomingConnection(qintptr socketId)
 
 void ModbusTcpServer::onSessionClosed(int sessionId)
 {
-    foreach (ModbusTcpSocket *client, _clients) {
+    for (ModbusTcpSocket* client : _clients) {
 
         if (client->sessionId() == sessionId) {
 
