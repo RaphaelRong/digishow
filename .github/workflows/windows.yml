@@ -1,0 +1,63 @@
+name: Build Windows
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt 6.11.1 (MSVC2022 x64)
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.1'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2022_64'
+          modules: 'qtwebengine qtwebchannel qtwebsockets qtmultimedia qtserialport qtpositioning qtsvg'
+          cache: true
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Download libusb
+        shell: pwsh
+        run: |
+          $libusbUrl = "https://github.com/libusb/libusb/releases/download/v1.0.28/libusb-1.0.28.7z"
+          $libusbArchive = "libusb-1.0.28.7z"
+          Invoke-WebRequest -Uri $libusbUrl -OutFile $libusbArchive -MaximumRetryCount 3
+          7z x $libusbArchive -olibusb_extracted
+          $dest = "DigiShow/modules/libftdi/libusb/win"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item "libusb_extracted/VS2019/MS64/dll/libusb-1.0.lib" $dest
+          Copy-Item "libusb_extracted/VS2019/MS64/dll/libusb-1.0.dll" $dest
+
+      - name: Build DigiShow
+        shell: cmd
+        run: |
+          cd DigiShow
+          qmake DigiShow.pro
+          nmake
+
+      - name: Deploy with windeployqt
+        shell: cmd
+        run: |
+          cd DigiShow
+          windeployqt release/DigiShow.exe --qmldir resources --qmldir resources/components
+          copy modules\libftdi\libusb\win\libusb-1.0.dll release\
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: DigiShow-Windows-x64
+          path: DigiShow/release/

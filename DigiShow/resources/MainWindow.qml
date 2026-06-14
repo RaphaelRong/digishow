@@ -165,7 +165,14 @@ ApplicationWindow {
         utilities.setMacWindowIsModified(window, isModified)
     }
 
-    onClosing: {
+    property bool closeRequested: false
+
+    onClosing: (close) => {
+        if (closeRequested) {
+            // second close event triggered by Qt.quit(), accept it
+            return
+        }
+        closeRequested = true
         app.stop()
         close.accepted = false
         common.runLater(appClose)
