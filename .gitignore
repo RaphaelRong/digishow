@@ -33,6 +33,7 @@ ui_*.h
 Makefile*
 *build-*
 *.qm
+!DigiShow/resources/translations/*.qm
 *.prl
 
 # Qt unit tests
